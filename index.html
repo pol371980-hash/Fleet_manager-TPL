@@ -1,0 +1,1024 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Στόλος Οχημάτων — TPL Fleet Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0d0f14;--bg2:#13161e;--bg3:#1a1e2a;--bg4:#222636;--border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);--text:#e8eaf0;--text2:#8b91a8;--text3:#555d78;--accent:#da532c;--accent2:#b8441d;--green:#2ec97e;--amber:#f59e0b;--red:#f0645a;--teal:#1dc8a0;--purple:#9b7cff;--r:10px;--rsm:6px;--font:'DM Sans',sans-serif;--mono:'DM Mono',monospace;--shadow:0 4px 24px rgba(0,0,0,.4);--tr:.18s cubic-bezier(.4,0,.2,1)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:14px}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+.app{display:flex;min-height:100vh}
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{flex:1;overflow-x:hidden;min-width:0}
+.sidebar-logo{padding:22px 18px 14px;border-bottom:1px solid var(--border)}
+.tpl-logo{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.tpl-logo-text{font-size:19px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.tpl-logo-text span{color:var(--text3);font-weight:500}
+.sidebar-logo h1{font-size:15px;font-weight:600;line-height:1.3}
+.sidebar-logo p{font-size:11px;color:var(--text3);margin-top:2px}
+.nav{padding:10px 8px;flex:1}
+.nav-sec{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:10px 10px 5px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rsm);cursor:pointer;color:var(--text2);font-size:13px;transition:var(--tr);margin-bottom:2px;user-select:none}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(218,83,44,.15);color:var(--accent);font-weight:500}
+.nav-item svg{width:15px;height:15px;flex-shrink:0}
+.nav-chevron{transition:transform .15s ease}
+.nav-chevron.rot{transform:rotate(180deg)}
+.nav-sub{display:none;padding-left:16px;position:relative}
+.nav-sub.open{display:block}
+.nav-sub::before{content:'';position:absolute;left:19px;top:0;bottom:6px;width:1px;background:var(--border2)}
+.nav-subitem{font-size:12px;padding:7px 10px}
+.nav-subitem svg{width:13px;height:13px}
+.sidebar-footer{padding:14px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--text3)}
+.sidebar-footer span{color:var(--green);font-weight:500}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:50;gap:12px}
+.topbar h2{font-size:15px;font-weight:600;white-space:nowrap}
+.topbar-actions{display:flex;gap:7px;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 13px;border-radius:var(--rsm);font-size:12px;font-weight:500;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text);transition:var(--tr);font-family:var(--font);white-space:nowrap}
+.btn:hover{background:var(--bg4)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent2);border-color:var(--accent2)}
+.btn-danger{background:rgba(240,100,90,.12);border-color:rgba(240,100,90,.28);color:var(--red)}
+.btn-danger:hover{background:rgba(240,100,90,.22)}
+.btn-green{background:rgba(46,201,126,.12);border-color:rgba(46,201,126,.28);color:var(--green)}
+.btn-green:hover{background:rgba(46,201,126,.22)}
+.btn svg{width:13px;height:13px}
+.page{display:none;padding:24px;animation:fadeIn .18s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px}
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:15px 16px}
+.kpi-label{font-size:13px;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:7px;font-weight:700}
+.kpi-val{font-size:29px;font-weight:600;line-height:1}
+.kpi-sub{font-size:14px;color:var(--text3);margin-top:3px}
+.kpi.accent .kpi-val{color:var(--accent)}.kpi.green .kpi-val{color:var(--green)}.kpi.amber .kpi-val{color:var(--amber)}.kpi.red .kpi-val{color:var(--red)}.kpi.teal .kpi-val{color:var(--teal)}
+.stats-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px}
+.stat-card h4{font-size:14px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+.sbar-row{display:flex;align-items:center;gap:9px;margin-bottom:7px}
+.sbar-label{font-size:15px;color:var(--text2);width:90px;flex-shrink:0}
+.sbar-track{flex:1;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.sbar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.sbar-val{font-size:14px;font-family:var(--mono);color:var(--text3);width:24px;text-align:right;flex-shrink:0}
+.table-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px}
+.table-hdr{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border-bottom:1px solid var(--border)}
+.table-hdr h3{font-size:16px;font-weight:600}
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--bg3)}
+th{font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;padding:9px 12px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--border)}
+td{padding:10px 12px;font-size:15px;border-bottom:1px solid var(--border);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+.plate{font-family:var(--mono);font-size:11px;background:var(--bg4);padding:2px 7px;border-radius:4px;letter-spacing:.05em}
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px;letter-spacing:.03em}
+.b-electric{background:rgba(79,142,247,.15);color:#7ab4ff}.b-petrol{background:rgba(245,158,11,.15);color:#fbbf24}.b-hybrid{background:rgba(29,200,160,.15);color:var(--teal)}.b-diesel{background:rgba(240,100,90,.15);color:var(--red)}.b-owned{background:rgba(155,124,255,.15);color:var(--purple)}.b-leased{background:rgba(139,145,168,.15);color:var(--text2)}.b-ok{background:rgba(46,201,126,.15);color:var(--green)}.b-warn{background:rgba(245,158,11,.15);color:var(--amber)}.b-danger{background:rgba(240,100,90,.15);color:var(--red)}.b-na{background:var(--bg3);color:var(--text3)}
+.dok{color:var(--green);font-weight:500}.dwarn{color:var(--amber);font-weight:500}.ddanger{color:var(--red);font-weight:500}.dna{color:var(--text3)}
+.action-btn{width:27px;height:27px;border-radius:var(--rsm);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid transparent;transition:var(--tr)}
+.action-btn:hover{background:var(--bg4);border-color:var(--border2)}
+.action-btn svg{width:13px;height:13px}
+.lock-screen{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;align-items:center;justify-content:center;padding:20px}
+.lock-screen.hidden{display:none}
+.lock-box{width:100%;max-width:340px;text-align:center}
+.lock-box p.sub{font-size:12px;color:var(--text2);margin-bottom:22px;line-height:1.6}
+.lock-box input{width:100%;text-align:center;font-size:18px;letter-spacing:.3em;margin-bottom:10px}
+.lock-box .btn-primary{width:100%;justify-content:center;margin-top:4px}
+.lock-err{color:var(--red);font-size:12px;min-height:16px;margin-top:2px}
+.lock-reset{margin-top:18px;font-size:11px;color:var(--text3);cursor:pointer;text-decoration:underline}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;width:620px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:var(--shadow);animation:mIn .2s ease}
+@keyframes mIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid var(--border)}
+.modal-head h3{font-size:15px;font-weight:600}
+.mcls{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:var(--tr)}
+.mcls:hover{background:var(--bg4);color:var(--text)}
+.modal-body{padding:18px 22px}
+.modal-foot{padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg{display:flex;flex-direction:column;gap:5px}
+.fg.full{grid-column:1/-1}
+label{font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
+input,select{background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);padding:8px 11px;font-size:13px;color:var(--text);font-family:var(--font);transition:var(--tr)}
+input:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(218,83,44,.15)}
+select option{background:var(--bg3)}
+.backup-item{display:flex;align-items:center;justify-content:space-between;padding:11px 14px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rsm);margin-bottom:7px;transition:var(--tr)}
+.backup-item:hover{border-color:var(--border2)}
+.backup-info p{font-size:13px;font-weight:500}.backup-info span{font-size:11px;color:var(--text3);font-family:var(--mono)}
+.backup-actions{display:flex;gap:6px}
+.alert-item{display:flex;align-items:center;gap:11px;padding:11px 14px;border-radius:var(--rsm);border:1px solid var(--border);margin-bottom:7px}
+.alert-item.danger{border-color:rgba(240,100,90,.3);background:rgba(240,100,90,.06)}.alert-item.warning{border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.06)}.alert-item.ok{border-color:rgba(46,201,126,.2);background:rgba(46,201,126,.04)}
+.adot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.adot.danger{background:var(--red)}.adot.warning{background:var(--amber)}.adot.ok{background:var(--green)}
+.acar{font-weight:600;font-size:13px;flex:1}.atype{font-size:12px;color:var(--text2);margin-right:10px}.adays{font-size:12px;font-weight:600}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:11px 16px;font-size:13px;z-index:999;display:flex;align-items:center;gap:9px;box-shadow:var(--shadow);transform:translateY(80px);opacity:0;transition:.3s cubic-bezier(.4,0,.2,1)}
+.toast.show{transform:none;opacity:1}
+.toast.success{border-color:rgba(46,201,126,.4)}.toast.success svg{color:var(--green)}.toast.error{border-color:rgba(240,100,90,.4)}.toast.error svg{color:var(--red)}
+.sset{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:18px;margin-bottom:14px}
+.sset h3{font-size:13px;font-weight:600;margin-bottom:14px;padding-bottom:11px;border-bottom:1px solid var(--border)}
+.srow{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)}
+.srow:last-child{border-bottom:none}
+.srow-info p{font-size:13px;font-weight:500}.srow-info span{font-size:11px;color:var(--text3)}
+.filter-bar{display:flex;gap:7px;margin-bottom:18px;flex-wrap:wrap}
+.filter-bar .btn.sel{background:var(--accent);border-color:var(--accent);color:#fff}
+</style>
+</head>
+<body>
+<div class="lock-screen" id="lock-screen">
+  <div class="lock-box">
+    <div class="tpl-logo" style="justify-content:center;margin-bottom:18px">
+      <svg viewBox="0 0 40 40" width="34" height="34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="38" height="38" rx="9" fill="var(--accent)"/>
+        <path d="M9 13h22M9 20h22M9 27h14" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="tpl-logo-text">TPL</div>
+    </div>
+    <div id="lock-body"></div>
+  </div>
+</div>
+<div class="app">
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="tpl-logo">
+      <svg viewBox="0 0 40 40" width="34" height="34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="38" height="38" rx="9" fill="var(--accent)"/>
+        <path d="M9 13h22M9 20h22M9 27h14" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      </svg>
+      <div class="tpl-logo-text">TPL</div>
+    </div>
+    <h1>Fleet Manager</h1>
+    <p>Διαχείριση Στόλου</p>
+  </div>
+  <nav class="nav">
+    <div class="nav-sec">Κύριο Μενού</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Dashboard</div>
+    <div class="nav-item" onclick="showPage('vehicles',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 17H3a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v5"/><circle cx="15.5" cy="18.5" r="2.5"/><circle cx="5.5" cy="18.5" r="2.5"/></svg>Οχήματα
+      <svg id="veh-chevron" class="nav-chevron" onclick="toggleVehSub(event)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="margin-left:auto;width:12px;height:12px"><polyline points="6 9 12 15 18 9"/></svg></div>
+    <div class="nav-sub" id="nav-sub-vehicles">
+      <div class="nav-item nav-subitem" onclick="showPage('trips',this)">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Δρομολόγια</div>
+    </div>
+    <div class="nav-item" onclick="showPage('buildings',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 21h18M6 21V7a1 1 0 011-1h10a1 1 0 011 1v14M9 9h1M14 9h1M9 13h1M14 13h1M9 17h1M14 17h1"/></svg>Κτίρια</div>
+    <div class="nav-item" onclick="showPage('alerts',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>Ειδοποιήσεις
+      <span id="alert-badge" style="margin-left:auto;background:rgba(240,100,90,.2);color:var(--red);font-size:10px;font-weight:700;padding:2px 6px;border-radius:999px;display:none"></span></div>
+    <div class="nav-sec">Δεδομένα</div>
+    <div class="nav-item" onclick="showPage('backup',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Backup / Restore</div>
+    <div class="nav-item" onclick="showPage('settings',this)">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>Ρυθμίσεις</div>
+  </nav>
+  <div class="sidebar-footer">Αποθηκεύτηκε <span id="last-saved">—</span></div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <h2 id="page-title">Dashboard</h2>
+    <div class="topbar-actions">
+      <button class="btn" onclick="lockNow()" title="Κλείδωμα εφαρμογής"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></button>
+      <button class="btn btn-green" onclick="createBackup()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Backup</button>
+      <button class="btn btn-primary" onclick="saveData()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v13a2 2 0 01-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>Αποθήκευση</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="kpi-grid" id="kpi-grid"></div>
+    <div class="stats-row">
+      <div class="stat-card"><h4>Κατανομή κινητήρα</h4><div id="engine-bars"></div></div>
+      <div class="stat-card"><h4>Κατανομή ιδιοκτησίας</h4><div id="own-bars"></div></div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-hdr"><h3>Επισκόπηση Στόλου</h3><div id="dash-sum" style="font-size:12px;color:var(--text2)"></div></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Όχημα</th><th>Πινακίδα</th><th>Κινητήρας</th><th>Ιδιοκτησία</th><th>Ασφάλεια</th><th>ΚΤΕΟ</th><th>Service</th></tr></thead><tbody id="dash-tbody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- VEHICLES -->
+  <div class="page" id="page-vehicles">
+    <div class="filter-bar">
+      <button class="btn sel" id="fb-all" onclick="setFilter('all',this)">Όλα</button>
+      <button class="btn" id="fb-Electric" onclick="setFilter('Electric',this)">Ηλεκτρικά</button>
+      <button class="btn" id="fb-Petrol" onclick="setFilter('Petrol',this)">Βενζίνη</button>
+      <button class="btn" id="fb-Hybrid" onclick="setFilter('Hybrid',this)">Υβριδικά</button>
+      <button class="btn" id="fb-Diesel" onclick="setFilter('Diesel',this)">Diesel</button>
+      <button class="btn" id="fb-Owned" onclick="setFilter('Owned',this)">Ιδιόκτητα</button>
+      <button class="btn" id="fb-Leased" onclick="setFilter('Leased',this)">Leasing</button>
+      <button class="btn btn-primary" style="margin-left:auto" onclick="openAddModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Νέο Όχημα</button>
+    </div>
+    <div class="table-wrap">
+      <div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Όχημα</th><th>Πινακίδα</th><th>Κατηγορία</th><th>Κινητήρας</th><th>Ιδιοκτησία</th><th>Ασφάλεια</th><th>ΚΤΕΟ</th><th>Κ.Καυσ.</th><th>Service</th><th>Leasing</th><th></th></tr></thead><tbody id="veh-tbody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="page" id="page-alerts">
+    <div class="kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:18px">
+      <div class="kpi red"><div class="kpi-label">Επείγον</div><div class="kpi-val" id="cnt-d">0</div><div class="kpi-sub">&lt; 30 ημέρες</div></div>
+      <div class="kpi amber"><div class="kpi-label">Προσοχή</div><div class="kpi-val" id="cnt-w">0</div><div class="kpi-sub">30–90 ημέρες</div></div>
+      <div class="kpi green"><div class="kpi-label">Εντάξει</div><div class="kpi-val" id="cnt-o">0</div><div class="kpi-sub">&gt; 90 ημέρες</div></div>
+    </div>
+    <div id="alerts-list"></div>
+  </div>
+
+  <!-- TRIPS (per-vehicle δρομολόγια) -->
+  <div class="page" id="page-trips">
+    <div class="table-wrap" style="padding:16px;margin-bottom:18px">
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div class="fg" style="min-width:220px">
+          <label>Όχημα</label>
+          <select id="trip-veh-select" onchange="renderTrips()"></select>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:7px">
+          <button class="btn btn-primary" onclick="openAddTrip()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Νέο Δρομολόγιο</button>
+        </div>
+      </div>
+    </div>
+    <div class="kpi-grid" id="trip-kpi-grid"></div>
+    <div class="table-wrap">
+      <div class="table-hdr"><h3>Δρομολόγια</h3><div id="trip-sum" style="font-size:12px;color:var(--text2)"></div></div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Ημερομηνία</th><th>Αναχ.</th><th>Άφιξη</th><th>Χλμ έναρξη</th><th>Χλμ λήξη</th><th>Χλμ διαδρ.</th><th>Διόδια €</th><th>Φόρτιση €</th><th>Απλά</th><th>Ογκώδη</th><th>Πολύ μεγάλα</th><th>Σημειώσεις</th><th></th></tr></thead><tbody id="trip-tbody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- BUILDINGS -->
+  <div class="page" id="page-buildings">
+    <div class="table-wrap">
+      <div class="table-hdr">
+        <h3>Κτίρια Εταιρείας</h3>
+        <button class="btn btn-primary" onclick="openAddBuilding()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Νέο Κτίριο</button>
+      </div>
+      <div style="overflow-x:auto"><table><thead><tr><th>Όνομα / Διεύθυνση</th><th>Σημειώσεις</th><th></th></tr></thead><tbody id="bld-tbody"></tbody></table></div>
+    </div>
+  </div>
+
+  <!-- BACKUP -->
+  <div class="page" id="page-backup">
+    <div class="table-wrap" style="padding:18px">
+      <div class="table-hdr" style="margin:-18px -18px 18px;padding:13px 18px">
+        <h3>Αντίγραφα Ασφαλείας</h3>
+        <div style="display:flex;gap:7px">
+          <button class="btn btn-green" onclick="createBackup()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Νέο Backup</button>
+          <button class="btn" onclick="exportJSON()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>Εξαγωγή .json</button>
+          <label class="btn" style="cursor:pointer"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>Εισαγωγή .json<input type="file" accept=".json" style="display:none" onchange="importJSON(event)"></label>
+        </div>
+      </div>
+      <div id="backup-list"></div>
+    </div>
+
+    <div class="sset">
+      <h3 style="display:flex;align-items:center;gap:8px">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0020 4.77 5.07 5.07 0 0019.91 1S18.73.65 16 2.48a13.38 13.38 0 00-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 005 4.77a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
+        Συγχρονισμός με GitHub (για κινητό)
+      </h3>
+      <p style="font-size:12px;color:var(--text2);margin:-6px 0 14px;line-height:1.6">Χρησιμοποίησε ένα GitHub repo σαν κοινή αποθήκη δεδομένων: πάτα «Αποστολή» από μια συσκευή και «Λήψη» από την άλλη για να συγχρονίσεις Οχήματα, Δρομολόγια και Κτίρια.</p>
+      <div class="form-grid">
+        <div class="fg"><label>GitHub Owner / Οργανισμός</label><input id="gh-owner" placeholder="π.χ. pol-tpl"></div>
+        <div class="fg"><label>Repository</label><input id="gh-repo" placeholder="π.χ. fleet-manager"></div>
+        <div class="fg"><label>Branch</label><input id="gh-branch" value="main"></div>
+        <div class="fg"><label>Αρχείο δεδομένων</label><input id="gh-path" value="data/fleet-data.json"></div>
+        <div class="fg full"><label>Personal Access Token</label><input id="gh-token" type="password" placeholder="ghp_..."></div>
+      </div>
+      <div class="srow" style="border-bottom:none;padding-top:10px">
+        <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer">
+          <input type="checkbox" id="gh-remember" style="width:auto"> Να θυμάσαι το token σε αυτή τη συσκευή
+        </label>
+        <div style="display:flex;gap:7px">
+          <button class="btn" onclick="ghSaveConfig()">Αποθήκευση Στοιχείων</button>
+          <button class="btn btn-primary" onclick="ghPull()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5 5-5-5M12 3v10"/></svg>Λήψη</button>
+          <button class="btn btn-green" onclick="ghPush()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 8l5-5 5 5M12 3v13"/></svg>Αποστολή</button>
+        </div>
+      </div>
+      <p id="gh-status" style="font-size:12px;color:var(--text3);margin-top:8px"></p>
+    </div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="page" id="page-settings">
+    <div class="sset"><h3>Email Ειδοποιήσεων</h3>
+      <div class="srow" style="align-items:flex-start">
+        <div class="srow-info"><p>Email παραλήπτη</p><span>Διευθύνσεις για αποστολή ειδοποιήσεων</span></div>
+        <div style="display:flex;flex-direction:column;gap:7px;align-items:flex-end">
+          <div id="email-list" style="display:flex;flex-direction:column;gap:7px"></div>
+          <button class="btn" onclick="addEmailRow()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Προσθήκη email</button>
+        </div>
+      </div>
+      <div class="srow"><div class="srow-info"><p>Ημέρες πριν τη λήξη</p><span>Αποστολή ειδοποίησης X ημέρες πριν</span></div><input id="s-days" type="number" value="10" min="1" max="90" style="width:70px"></div>
+      <div class="srow"><div class="srow-info"><p></p></div><button class="btn btn-primary" onclick="saveSettings()">Αποθήκευση</button></div>
+    </div>
+    <div class="sset"><h3>Ασφάλεια</h3>
+      <p style="font-size:12px;color:var(--text2);margin:-6px 0 14px;line-height:1.6">Ο κωδικός προστατεύει την εφαρμογή από περιστασιακή πρόσβαση σε αυτή τη συσκευή/browser. Ισχύει τοπικά — αν ανοίξεις την εφαρμογή σε άλλη συσκευή, θα χρειαστεί να ορίσεις κωδικό ξανά εκεί.</p>
+      <div class="srow"><div class="srow-info"><p>Νέος Κωδικός</p><span>Τουλάχιστον 4 χαρακτήρες</span></div><input id="pin-new" type="password" style="width:150px" placeholder="••••"></div>
+      <div class="srow"><div class="srow-info"><p>Επιβεβαίωση</p></div><input id="pin-confirm" type="password" style="width:150px" placeholder="••••"></div>
+      <div class="srow"><div class="srow-info"><p></p></div>
+        <div style="display:flex;gap:7px">
+          <button class="btn btn-primary" onclick="changePin()">Αλλαγή Κωδικού</button>
+          <button class="btn" onclick="lockNow()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="width:13px;height:13px"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>Κλείδωμα Τώρα</button>
+          <button class="btn btn-danger" onclick="removePin()">Αφαίρεση Κωδικού</button>
+        </div>
+      </div>
+    </div>
+    <div class="sset"><h3>Δεδομένα</h3>
+      <div class="srow"><div class="srow-info"><p>Διαγραφή όλων των δεδομένων</p><span>Μη αναστρέψιμη ενέργεια</span></div><button class="btn btn-danger" onclick="clearAll()">Διαγραφή</button></div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="modal-overlay hidden" id="veh-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modal-title">Νέο Όχημα</h3><div class="mcls" onclick="closeModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg full"><label>Όνομα Οχήματος</label><input id="f-name" placeholder="π.χ. Mercedes eVITO"></div>
+        <div class="fg"><label>Αρ. Πινακίδας</label><input id="f-plate" placeholder="π.χ. AZO3324"></div>
+        <div class="fg"><label>Κατηγορία</label><select id="f-cat"><option>ΙΧ</option><option>Φορτηγό ΙΧ</option><option>Μηχανή</option><option>Λεωφορείο</option></select></div>
+        <div class="fg"><label>Κινητήρας</label><select id="f-engine" onchange="toggleKkField(true)"><option>Electric</option><option>Petrol</option><option>Hybrid</option><option>Diesel</option></select></div>
+        <div class="fg"><label>Ιδιοκτησία</label><select id="f-own"><option>Owned</option><option>Leased</option></select></div>
+        <div class="fg"><label>Λήξη Ασφάλειας</label><input id="f-ins" type="date"></div>
+        <div class="fg"><label>Λήξη ΚΤΕΟ</label><input id="f-kteo" type="date"></div>
+        <div class="fg" id="fg-kk"><label>Λήξη Κ. Καυσαερίων</label><input id="f-kk" type="date"></div>
+        <div class="fg"><label>Λήξη Leasing</label><input id="f-leasing" type="date"></div>
+        <div class="fg"><label>Επόμενο Service</label><input id="f-svc" type="date"></div>
+      </div>
+      <div class="form-grid" style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+        <div class="fg"><label>Ασφαλιστική Εταιρεία</label><input id="f-inscomp" placeholder="π.χ. Interamerican"></div>
+        <div class="fg"><label>Κάτοχος Leasing</label><input id="f-leaseholder" placeholder="π.χ. Όνομα εταιρείας/ατόμου"></div>
+        <div class="fg full"><label>Ιστορικό / Σημειώσεις Service</label><textarea id="f-svcnotes" rows="2" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);padding:8px 11px;font-size:13px;color:var(--text);font-family:var(--font);resize:vertical;width:100%" placeholder="π.χ. Αλλαγή λαδιών, τακάκια, ημερομηνίες..."></textarea></div>
+      </div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <label style="display:block;margin-bottom:10px">Συνημμένα Έγγραφα</label>
+        <div class="srow" style="padding:8px 0">
+          <div class="srow-info"><p>Ασφαλιστήριο</p><span id="doc-ins-status" style="font-size:11px;color:var(--text3)">Δεν έχει επισυναφθεί αρχείο</span></div>
+          <div style="display:flex;gap:6px">
+            <label class="btn" style="cursor:pointer">Επιλογή<input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocUpload(event,'ins')"></label>
+            <button class="btn btn-danger" style="display:none" id="doc-ins-remove" onclick="removeDoc('ins')">Αφαίρεση</button>
+          </div>
+        </div>
+        <div class="srow" style="padding:8px 0">
+          <div class="srow-info"><p>ΚΤΕΟ</p><span id="doc-kteo-status" style="font-size:11px;color:var(--text3)">Δεν έχει επισυναφθεί αρχείο</span></div>
+          <div style="display:flex;gap:6px">
+            <label class="btn" style="cursor:pointer">Επιλογή<input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocUpload(event,'kteo')"></label>
+            <button class="btn btn-danger" style="display:none" id="doc-kteo-remove" onclick="removeDoc('kteo')">Αφαίρεση</button>
+          </div>
+        </div>
+        <div class="srow" style="padding:8px 0" id="doc-kk-row">
+          <div class="srow-info"><p>Κάρτα Καυσαερίων</p><span id="doc-kk-status" style="font-size:11px;color:var(--text3)">Δεν έχει επισυναφθεί αρχείο</span></div>
+          <div style="display:flex;gap:6px">
+            <label class="btn" style="cursor:pointer">Επιλογή<input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="handleDocUpload(event,'kk')"></label>
+            <button class="btn btn-danger" style="display:none" id="doc-kk-remove" onclick="removeDoc('kk')">Αφαίρεση</button>
+          </div>
+        </div>
+        <p style="font-size:10px;color:var(--text3);margin-top:4px">Μέγιστο μέγεθος αρχείου: 4MB (αποθηκεύεται τοπικά στον browser).</p>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal()">Ακύρωση</button><button class="btn btn-primary" onclick="saveVehicle()">Αποθήκευση</button></div>
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay hidden" id="del-modal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-head"><h3>Διαγραφή Οχήματος</h3><div class="mcls" onclick="document.getElementById('del-modal').classList.add('hidden')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+    <div class="modal-body"><p style="color:var(--text2);font-size:13px;line-height:1.6">Είστε σίγουροι ότι θέλετε να διαγράψετε το <strong id="del-name" style="color:var(--text)"></strong>;</p></div>
+    <div class="modal-foot"><button class="btn" onclick="document.getElementById('del-modal').classList.add('hidden')">Ακύρωση</button><button class="btn btn-danger" onclick="confirmDelete()">Διαγραφή</button></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT TRIP MODAL -->
+<div class="modal-overlay hidden" id="trip-modal">
+  <div class="modal">
+    <div class="modal-head"><h3 id="trip-modal-title">Νέο Δρομολόγιο</h3><div class="mcls" onclick="closeTripModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg full"><label>Όχημα</label><select id="t-vehicle"></select></div>
+        <div class="fg"><label>Ημερομηνία</label><input id="t-date" type="date"></div>
+        <div class="fg"></div>
+        <div class="fg"><label>Ώρα Αναχώρησης</label><input id="t-dep" type="time"></div>
+        <div class="fg"><label>Ώρα Άφιξης</label><input id="t-arr" type="time"></div>
+        <div class="fg"><label>Χλμ Έναρξη</label><input id="t-kmstart" type="number" step="1" placeholder="π.χ. 45210"></div>
+        <div class="fg"><label>Χλμ Λήξη</label><input id="t-kmend" type="number" step="1" placeholder="π.χ. 45260"></div>
+        <div class="fg"><label>Κόστος Διοδίων (€)</label><input id="t-tolls" type="number" step="0.01" placeholder="0.00"></div>
+        <div class="fg"><label>Κόστος Φόρτισης (€)</label><input id="t-charge" type="number" step="0.01" placeholder="0.00"></div>
+        <div class="fg"><label>Κιβώτια Απλά</label><input id="t-box1" type="number" step="1" min="0" placeholder="0"></div>
+        <div class="fg"><label>Κιβώτια Ογκώδη</label><input id="t-box2" type="number" step="1" min="0" placeholder="0"></div>
+        <div class="fg"><label>Κιβώτια Πολύ Μεγάλα</label><input id="t-box3" type="number" step="1" min="0" placeholder="0"></div>
+        <div class="fg full"><label>Σημειώσεις</label><input id="t-notes" placeholder="προαιρετικό"></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeTripModal()">Ακύρωση</button><button class="btn btn-primary" onclick="saveTrip()">Αποθήκευση</button></div>
+  </div>
+</div>
+
+<!-- DELETE TRIP MODAL -->
+<div class="modal-overlay hidden" id="del-trip-modal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-head"><h3>Διαγραφή Δρομολογίου</h3><div class="mcls" onclick="document.getElementById('del-trip-modal').classList.add('hidden')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+    <div class="modal-body"><p style="color:var(--text2);font-size:13px;line-height:1.6">Είστε σίγουροι ότι θέλετε να διαγράψετε αυτό το δρομολόγιο;</p></div>
+    <div class="modal-foot"><button class="btn" onclick="document.getElementById('del-trip-modal').classList.add('hidden')">Ακύρωση</button><button class="btn btn-danger" onclick="confirmDeleteTrip()">Διαγραφή</button></div>
+  </div>
+</div>
+
+<!-- ADD/EDIT BUILDING MODAL -->
+<div class="modal-overlay hidden" id="bld-modal">
+  <div class="modal" style="width:460px">
+    <div class="modal-head"><h3 id="bld-modal-title">Νέο Κτίριο</h3><div class="mcls" onclick="closeBuildingModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+    <div class="modal-body">
+      <div class="form-grid">
+        <div class="fg full"><label>Όνομα / Διεύθυνση Κτιρίου</label><input id="bld-name" placeholder="π.χ. Εθνομαρτύρων 41"></div>
+        <div class="fg full"><label>Σημειώσεις</label><textarea id="bld-notes" rows="3" style="background:var(--bg3);border:1px solid var(--border2);border-radius:var(--rsm);padding:8px 11px;font-size:13px;color:var(--text);font-family:var(--font);resize:vertical;width:100%" placeholder="προαιρετικό"></textarea></div>
+      </div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeBuildingModal()">Ακύρωση</button><button class="btn btn-primary" onclick="saveBuilding()">Αποθήκευση</button></div>
+  </div>
+</div>
+
+<!-- DELETE BUILDING MODAL -->
+<div class="modal-overlay hidden" id="del-bld-modal">
+  <div class="modal" style="max-width:360px">
+    <div class="modal-head"><h3>Διαγραφή Κτιρίου</h3><div class="mcls" onclick="document.getElementById('del-bld-modal').classList.add('hidden')"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+    <div class="modal-body"><p style="color:var(--text2);font-size:13px;line-height:1.6">Είστε σίγουροι ότι θέλετε να διαγράψετε το <strong id="del-bld-name" style="color:var(--text)"></strong>;</p></div>
+    <div class="modal-foot"><button class="btn" onclick="document.getElementById('del-bld-modal').classList.add('hidden')">Ακύρωση</button><button class="btn btn-danger" onclick="confirmDeleteBuilding()">Διαγραφή</button></div>
+  </div>
+</div>
+
+<!-- VIEW VEHICLE (read-only) MODAL -->
+<div class="modal-overlay hidden" id="view-modal">
+  <div class="modal" style="width:640px">
+    <div class="modal-head"><h3 id="view-modal-title">Στοιχεία Οχήματος</h3><div class="mcls" onclick="closeViewModal()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="16" height="16"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div></div>
+    <div class="modal-body" id="view-modal-body"></div>
+    <div class="modal-foot"><button class="btn" onclick="closeViewModal()">Κλείσιμο</button><button class="btn btn-primary" onclick="editFromView()"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>Επεξεργασία</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="15" height="15" id="t-icon"><polyline points="20 6 9 17 4 12"/></svg><span id="t-msg"></span></div>
+
+<script>
+const DEF=[{id:1,name:'Mercedes eVITO',plate:'AZO3324',cat:'Φορτηγό ΙΧ',engine:'Electric',own:'Owned',ins:'2026-12-31',kteo:'2029-12-29',kk:null,leasing:null,svc:'2026-12-01'},{id:8,name:'Tesla',plate:'ΧΗΡ2290',cat:'ΙΧ',engine:'Electric',own:'Owned',ins:'2027-02-19',kteo:'2028-02-19',kk:null,leasing:null,svc:null},{id:5,name:'Opel Corsa S D',plate:'ΑΖΒ2377',cat:'ΙΧ',engine:'Diesel',own:'Owned',ins:'2027-05-25',kteo:'2028-05-25',kk:'2027-05-25',leasing:null,svc:'2026-08-29'},{id:6,name:'Honda SUPRA X',plate:'ΑΥΥ784',cat:'Μηχανή',engine:'Petrol',own:'Owned',ins:'2027-01-12',kteo:null,kk:null,leasing:null,svc:null},{id:7,name:'Suzuki Grand Vitara',plate:'ΖΚΖ5093',cat:'ΙΧ',engine:'Petrol',own:'Owned',ins:'2026-08-21',kteo:'2027-09-06',kk:'2026-09-06',leasing:null,svc:'2027-03-31'},{id:2,name:'Volvo X30',plate:'BMI1322',cat:'ΙΧ',engine:'Electric',own:'Leased',ins:'2027-02-05',kteo:'2030-01-29',kk:null,leasing:'2030-02-04',svc:null},{id:3,name:'Opel Corsa Edition',plate:'BMI6432',cat:'ΙΧ',engine:'Petrol',own:'Leased',ins:'2026-12-31',kteo:'2030-03-02',kk:null,leasing:'2030-03-01',svc:null},{id:4,name:'Peugeot 2008 Hybrid',plate:'XPK4849',cat:'ΙΧ',engine:'Hybrid',own:'Leased',ins:'2026-12-31',kteo:'2030-02-04',kk:null,leasing:'2030-02-03',svc:null}];
+let V=[],B=[],T=[],BLD=[],S={emails:['theristopoulos@tpl.gr'],days:10},editId=null,delId=null,editTripId=null,delTripId=null,editBldId=null,delBldId=null,filter='all',ghSha=null;
+let editDocs={ins:null,kteo:null,kk:null};
+const TODAY=new Date();
+
+const DEF_TRIPS=[
+  {id:1,vehicleId:1,date:new Date().toISOString().slice(0,10),dep:'08:15',arr:'11:40',kmStart:45210,kmEnd:45260,tolls:5.90,charge:12.30,box1:8,box2:3,box3:1,notes:'Πάτρα → Κόρινθος'}
+];
+const DEF_BLD=[
+  {id:1,name:'Εθνομαρτύρων 41',notes:''},
+  {id:2,name:'Εθνομαρτύρων 40',notes:''},
+  {id:3,name:'Βιοπα 1',notes:''},
+  {id:4,name:'Βιοπα 2',notes:''}
+];
+
+function load(){
+  try{V=JSON.parse(localStorage.getItem('flV')||'null')||JSON.parse(JSON.stringify(DEF));}catch(e){V=JSON.parse(JSON.stringify(DEF));}
+  try{B=JSON.parse(localStorage.getItem('flB')||'[]');}catch(e){B=[];}
+  try{
+    const raw=localStorage.getItem('flT');
+    T=raw?JSON.parse(raw):JSON.parse(JSON.stringify(DEF_TRIPS));
+  }catch(e){T=[];}
+  try{
+    const rawB=localStorage.getItem('flBld');
+    BLD=rawB?JSON.parse(rawB):JSON.parse(JSON.stringify(DEF_BLD));
+  }catch(e){BLD=[];}
+  try{const s=localStorage.getItem('flS');if(s)S=JSON.parse(s);}catch(e){}
+  if(!Array.isArray(S.emails)){S.emails=S.email?[S.email]:['theristopoulos@tpl.gr'];}
+  delete S.email;
+  try{
+    const gh=JSON.parse(localStorage.getItem('flGh')||'null');
+    if(gh){
+      ['owner','repo','branch','path'].forEach(k=>{const el=document.getElementById('gh-'+k);if(el&&gh[k])el.value=gh[k];});
+      if(gh.token){const el=document.getElementById('gh-token');if(el)el.value=gh.token;const c=document.getElementById('gh-remember');if(c)c.checked=true;}
+    }
+  }catch(e){}
+}
+function saveData(){
+  localStorage.setItem('flV',JSON.stringify(V));
+  localStorage.setItem('flT',JSON.stringify(T));
+  localStorage.setItem('flBld',JSON.stringify(BLD));
+  localStorage.setItem('flS',JSON.stringify(S));
+  const t=new Date().toLocaleTimeString('el-GR',{hour:'2-digit',minute:'2-digit'});
+  document.getElementById('last-saved').textContent=t;
+  toast('Αποθηκεύτηκε!','success');
+  renderAll();
+}
+function createBackup(){
+  const bk={id:Date.now(),date:new Date().toLocaleString('el-GR'),vehicles:JSON.parse(JSON.stringify(V)),trips:JSON.parse(JSON.stringify(T)),buildings:JSON.parse(JSON.stringify(BLD)),count:V.length};
+  B.unshift(bk);if(B.length>20)B=B.slice(0,20);
+  localStorage.setItem('flB',JSON.stringify(B));
+  renderBackups();toast('Backup δημιουργήθηκε!','success');
+}
+function restoreBackup(id){
+  const b=B.find(x=>x.id===id);if(!b)return;
+  if(!confirm('Επαναφορά backup από '+b.date+'; Τα τρέχοντα δεδομένα θα αντικατασταθούν.'))return;
+  V=JSON.parse(JSON.stringify(b.vehicles));if(b.trips)T=JSON.parse(JSON.stringify(b.trips));if(b.buildings)BLD=JSON.parse(JSON.stringify(b.buildings));saveData();toast('Επαναφορά επιτυχής!','success');
+}
+function deleteBackup(id){B=B.filter(x=>x.id!==id);localStorage.setItem('flB',JSON.stringify(B));renderBackups();toast('Backup διαγράφηκε','success');}
+function exportJSON(){
+  const blob=new Blob([JSON.stringify({exported:new Date().toISOString(),vehicles:V,trips:T,buildings:BLD,backups:B,settings:S},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fleet_backup_'+new Date().toISOString().slice(0,10)+'.json';a.click();
+  toast('Εξαγωγή ολοκληρώθηκε!','success');
+}
+function importJSON(e){
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=ev=>{try{const d=JSON.parse(ev.target.result);if(d.vehicles){V=d.vehicles;if(d.trips)T=d.trips;if(d.buildings)BLD=d.buildings;if(d.backups)B=d.backups;if(d.settings)S=d.settings;saveData();toast('Εισαγωγή επιτυχής!','success');}else toast('Μη έγκυρο αρχείο','error');}catch{toast('Σφάλμα αρχείου','error');}};
+  r.readAsText(f);
+}
+function dU(s){if(!s)return null;const d=new Date(s);if(isNaN(d))return null;return Math.round((d-TODAY)/86400000);}
+function fD(s){if(!s)return '—';const d=new Date(s);if(isNaN(d))return '—';return d.toLocaleDateString('el-GR',{day:'2-digit',month:'2-digit',year:'numeric'});}
+function dL(n){if(n===null)return['—','dna'];if(n<0)return[Math.abs(n)+'μ πριν!','ddanger'];if(n===0)return['Σήμερα!','ddanger'];if(n<30)return[n+' μέρες','ddanger'];if(n<90)return[n+' μέρες','dwarn'];return[n+' μέρες','dok'];}
+function sBadge(n){if(n===null)return'<span class="badge b-na">N/A</span>';if(n<0)return'<span class="badge b-danger">ΛΗΞΕ</span>';if(n<30)return'<span class="badge b-danger">ΕΠΕΙΓΟΝ</span>';if(n<90)return'<span class="badge b-warn">ΠΡΟΣΟΧΗ</span>';return'<span class="badge b-ok">OK</span>';}
+function engBadge(e){const m={Electric:'b-electric',Petrol:'b-petrol',Hybrid:'b-hybrid',Diesel:'b-diesel'};return'<span class="badge '+(m[e]||'b-na')+'">'+e+'</span>';}
+function ownBadge(o){return'<span class="badge '+(o==='Leased'?'b-leased':'b-owned')+'">'+(o==='Leased'?'Leasing':'Ιδιόκτητο')+'</span>';}
+function getAlerts(thr){
+  const out=[];
+  V.forEach(v=>{
+    const checks=[['Ασφάλεια',v.ins],['ΚΤΕΟ',v.kteo],['Service',v.svc]];
+    if(v.engine!=='Electric')checks.push(['Κ.Καυσ.',v.kk]);
+    checks.forEach(([t,d])=>{const n=dU(d);if(n!==null&&n>=0&&n<=thr)out.push({...v,aType:t,days:n,aDate:d});});
+  });
+  return out.sort((a,b)=>a.days-b.days);
+}
+
+function renderDash(){
+  const tot=V.length,el=V.filter(v=>v.engine==='Electric').length,ls=V.filter(v=>v.own==='Leased').length,ow=V.filter(v=>v.own==='Owned').length;
+  const warns=getAlerts(90).length;
+  document.getElementById('kpi-grid').innerHTML=`
+    <div class="kpi accent"><div class="kpi-label">Σύνολο</div><div class="kpi-val">${tot}</div><div class="kpi-sub">οχήματα</div></div>
+    <div class="kpi teal"><div class="kpi-label">Ηλεκτρικά</div><div class="kpi-val">${el}</div><div class="kpi-sub">${Math.round(el/tot*100)}% στόλου</div></div>
+    <div class="kpi green"><div class="kpi-label">Ασφαλισμένα</div><div class="kpi-val">${tot}</div><div class="kpi-sub">100% ενήμερα</div></div>
+    <div class="kpi amber"><div class="kpi-label">Εκκρεμότητες</div><div class="kpi-val">${warns}</div><div class="kpi-sub">λήξεις &lt; 90μ</div></div>`;
+  const eC=['#4f8ef7','#f59e0b','#1dc8a0','#f0645a'];
+  document.getElementById('engine-bars').innerHTML=['Electric','Petrol','Hybrid','Diesel'].map((e,i)=>{const c=V.filter(v=>v.engine===e).length;return`<div class="sbar-row"><div class="sbar-label">${e}</div><div class="sbar-track"><div class="sbar-fill" style="width:${c/tot*100}%;background:${eC[i]}"></div></div><div class="sbar-val">${c}</div></div>`;}).join('');
+  document.getElementById('own-bars').innerHTML=`<div class="sbar-row"><div class="sbar-label">Ιδιόκτητα</div><div class="sbar-track"><div class="sbar-fill" style="width:${ow/tot*100}%;background:#9b7cff"></div></div><div class="sbar-val">${ow}</div></div><div class="sbar-row"><div class="sbar-label">Leasing</div><div class="sbar-track"><div class="sbar-fill" style="width:${ls/tot*100}%;background:#8b91a8"></div></div><div class="sbar-val">${ls}</div></div>`;
+  document.getElementById('dash-tbody').innerHTML=V.map(v=>{const[iL,iC]=dL(dU(v.ins)),[kL,kC]=dL(dU(v.kteo)),[sL,sC]=dL(dU(v.svc));return`<tr><td style="font-weight:500;cursor:pointer;color:var(--accent)" onclick="openView(${v.id})" title="Προβολή στοιχείων">${v.name}</td><td><span class="plate">${v.plate}</span></td><td>${engBadge(v.engine)}</td><td>${ownBadge(v.own)}</td><td class="${iC}">${iL}</td><td class="${kC}">${kL}</td><td class="${sC}">${sL}</td></tr>`;}).join('');
+  document.getElementById('dash-sum').textContent=warns>0?'⚠ '+warns+' λήξεις εντός 90 ημερών':'✓ Όλα εντάξει';
+}
+
+function renderVehicles(f){
+  const fv=V.filter(v=>f==='all'||v.engine===f||v.own===f);
+  document.getElementById('veh-tbody').innerHTML=fv.map(v=>{
+    const[iL,iC]=dL(dU(v.ins)),[kL,kC]=dL(dU(v.kteo)),[kkL,kkC]=dL(dU(v.kk)),[sL,sC]=dL(dU(v.svc)),[lL,lC]=dL(dU(v.leasing));
+    const dIns=docLink(v,'ins'),dKteo=docLink(v,'kteo'),dKk=docLink(v,'kk');
+    const kkCell=v.engine==='Electric'?'<span class="dna" title="Δεν εκπέμπει ρύπους">Δ/Ε</span>':`<span class="${kkC}">${kkL}</span>${dKk}`;
+    return`<tr><td style="color:var(--text3);font-family:var(--mono);font-size:11px">${v.id}</td><td style="font-weight:500;cursor:pointer;color:var(--accent)" onclick="openView(${v.id})" title="Προβολή στοιχείων">${v.name}</td><td><span class="plate">${v.plate}</span></td><td style="color:var(--text2);font-size:12px">${v.cat}</td><td>${engBadge(v.engine)}</td><td>${ownBadge(v.own)}</td><td class="${iC}" style="font-size:12px">${iL}${dIns}</td><td class="${kC}" style="font-size:12px">${kL}${dKteo}</td><td style="font-size:12px">${kkCell}</td><td class="${sC}" style="font-size:12px">${sL}</td><td class="${lC}" style="font-size:12px">${lL}</td><td><div style="display:flex;gap:4px"><div class="action-btn" onclick="openEdit(${v.id})" style="color:var(--accent)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><div class="action-btn" onclick="openDel(${v.id})" style="color:var(--red)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></div></div></td></tr>`;
+  }).join('');
+}
+function docLink(v,type){
+  const d=v.docs&&v.docs[type];
+  if(!d)return'';
+  return' <a href="'+d.data+'" download="'+d.name+'" title="'+d.name+'" style="margin-left:3px;text-decoration:none">📎</a>';
+}
+
+function setFilter(f,btn){
+  filter=f;
+  document.querySelectorAll('.filter-bar .btn').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  renderVehicles(f);
+}
+
+function renderAlerts(){
+  const all=getAlerts(365);
+  const d=all.filter(a=>a.days<30).length,w=all.filter(a=>a.days>=30&&a.days<90).length,o=all.filter(a=>a.days>=90).length;
+  document.getElementById('cnt-d').textContent=d;document.getElementById('cnt-w').textContent=w;document.getElementById('cnt-o').textContent=o;
+  const ab=document.getElementById('alert-badge');
+  if(d+w>0){ab.style.display='';ab.textContent=d+w;}else ab.style.display='none';
+  document.getElementById('alerts-list').innerHTML=all.length===0?'<div class="alert-item ok"><div class="adot ok"></div><div class="acar">Όλα εντάξει!</div></div>':all.map(a=>{const cl=a.days<30?'danger':a.days<90?'warning':'ok';return`<div class="alert-item ${cl}"><div class="adot ${cl}"></div><div class="acar">${a.name} <span class="plate" style="margin-left:6px">${a.plate}</span></div><div class="atype">${a.aType}</div><div class="adays ${a.days<30?'ddanger':a.days<90?'dwarn':'dok'}">${a.days===0?'Σήμερα!':a.days+' μέρες'} · ${fD(a.aDate)}</div></div>`;}).join('');
+}
+
+function renderBackups(){
+  const el=document.getElementById('backup-list');
+  el.innerHTML=B.length===0?'<div style="text-align:center;padding:28px;color:var(--text3);font-size:13px">Δεν υπάρχουν backups ακόμη.</div>':B.map(b=>`<div class="backup-item"><div class="backup-info"><p>Backup ${b.date}</p><span>${b.count} οχήματα · ID:${b.id}</span></div><div class="backup-actions"><button class="btn btn-green" onclick="restoreBackup(${b.id})">Επαναφορά</button><button class="btn btn-danger" onclick="deleteBackup(${b.id})">Διαγραφή</button></div></div>`).join('');
+}
+
+const PT={dashboard:'Dashboard',vehicles:'Οχήματα',alerts:'Ειδοποιήσεις',trips:'Δρομολόγια',buildings:'Κτίρια',backup:'Backup / Restore',settings:'Ρυθμίσεις'};
+function toggleVehSub(e){
+  if(e)e.stopPropagation();
+  document.getElementById('nav-sub-vehicles').classList.toggle('open');
+  document.getElementById('veh-chevron').classList.toggle('rot');
+}
+function setVehSub(open){
+  document.getElementById('nav-sub-vehicles').classList.toggle('open',open);
+  document.getElementById('veh-chevron').classList.toggle('rot',open);
+}
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if(el)el.classList.add('active');
+  document.getElementById('page-title').textContent=PT[id]||id;
+  if(id==='vehicles'||id==='trips')setVehSub(true);
+  if(id==='vehicles')renderVehicles(filter);
+  if(id==='alerts')renderAlerts();
+  if(id==='trips')renderTripsPage();
+  if(id==='buildings')renderBuildings();
+  if(id==='backup')renderBackups();
+}
+
+function updateDocUI(type){
+  const doc=editDocs[type];
+  const statusEl=document.getElementById('doc-'+type+'-status');
+  const removeBtn=document.getElementById('doc-'+type+'-remove');
+  if(!statusEl||!removeBtn)return;
+  if(doc){statusEl.innerHTML='<a href="'+doc.data+'" download="'+doc.name+'" style="color:var(--accent)">📎 '+doc.name+'</a>';removeBtn.style.display='';}
+  else{statusEl.textContent='Δεν έχει επισυναφθεί αρχείο';removeBtn.style.display='none';}
+}
+function refreshAllDocUI(){['ins','kteo','kk'].forEach(updateDocUI);}
+function handleDocUpload(e,type){
+  const f=e.target.files[0];if(!f)return;
+  if(f.size>4*1024*1024){toast('Το αρχείο είναι πολύ μεγάλο (μέγιστο 4MB)','error');e.target.value='';return;}
+  const r=new FileReader();
+  r.onload=ev=>{editDocs[type]={name:f.name,data:ev.target.result};updateDocUI(type);};
+  r.readAsDataURL(f);
+  e.target.value='';
+}
+function removeDoc(type){editDocs[type]=null;updateDocUI(type);}
+
+function toggleKkField(clear){
+  const isElectric=document.getElementById('f-engine').value==='Electric';
+  document.getElementById('fg-kk').style.display=isElectric?'none':'';
+  document.getElementById('doc-kk-row').style.display=isElectric?'none':'';
+  if(isElectric&&clear){document.getElementById('f-kk').value='';editDocs.kk=null;updateDocUI('kk');}
+}
+function openAddModal(){editId=null;document.getElementById('modal-title').textContent='Νέο Όχημα';['name','plate','ins','kteo','kk','leasing','svc','inscomp','leaseholder','svcnotes'].forEach(f=>document.getElementById('f-'+f).value='');document.getElementById('f-cat').value='ΙΧ';document.getElementById('f-engine').value='Electric';document.getElementById('f-own').value='Owned';editDocs={ins:null,kteo:null,kk:null};refreshAllDocUI();toggleKkField(false);document.getElementById('veh-modal').classList.remove('hidden');}
+function openEdit(id){const v=V.find(x=>x.id===id);if(!v)return;editId=id;document.getElementById('modal-title').textContent='Επεξεργασία: '+v.name;document.getElementById('f-name').value=v.name||'';document.getElementById('f-plate').value=v.plate||'';document.getElementById('f-cat').value=v.cat||'ΙΧ';document.getElementById('f-engine').value=v.engine||'Electric';document.getElementById('f-own').value=v.own||'Owned';document.getElementById('f-ins').value=v.ins||'';document.getElementById('f-kteo').value=v.kteo||'';document.getElementById('f-kk').value=v.kk||'';document.getElementById('f-leasing').value=v.leasing||'';document.getElementById('f-svc').value=v.svc||'';document.getElementById('f-inscomp').value=v.inscomp||'';document.getElementById('f-leaseholder').value=v.leaseholder||'';document.getElementById('f-svcnotes').value=v.svcnotes||'';editDocs={ins:(v.docs&&v.docs.ins)||null,kteo:(v.docs&&v.docs.kteo)||null,kk:(v.docs&&v.docs.kk)||null};refreshAllDocUI();toggleKkField(false);document.getElementById('veh-modal').classList.remove('hidden');}
+function closeModal(){document.getElementById('veh-modal').classList.add('hidden');editId=null;}
+function saveVehicle(){
+  const name=document.getElementById('f-name').value.trim(),plate=document.getElementById('f-plate').value.trim();
+  if(!name||!plate){toast('Συμπληρώστε όνομα και πινακίδα','error');return;}
+  const engine=document.getElementById('f-engine').value;
+  const isElectric=engine==='Electric';
+  const data={name,plate,cat:document.getElementById('f-cat').value,engine,own:document.getElementById('f-own').value,ins:document.getElementById('f-ins').value||null,kteo:document.getElementById('f-kteo').value||null,kk:isElectric?null:(document.getElementById('f-kk').value||null),leasing:document.getElementById('f-leasing').value||null,svc:document.getElementById('f-svc').value||null,inscomp:document.getElementById('f-inscomp').value.trim()||null,leaseholder:document.getElementById('f-leaseholder').value.trim()||null,svcnotes:document.getElementById('f-svcnotes').value.trim()||null,docs:{ins:editDocs.ins,kteo:editDocs.kteo,kk:isElectric?null:editDocs.kk}};
+  if(editId){const i=V.findIndex(v=>v.id===editId);if(i>=0)V[i]={...V[i],...data};toast('Αποθηκεύτηκε!','success');}else{V.push({id:V.reduce((m,v)=>Math.max(m,v.id),0)+1,...data});toast('Προστέθηκε!','success');}
+  closeModal();saveData();
+}
+function openDel(id){const v=V.find(x=>x.id===id);if(!v)return;delId=id;document.getElementById('del-name').textContent=v.name;document.getElementById('del-modal').classList.remove('hidden');}
+function confirmDelete(){V=V.filter(v=>v.id!==delId);document.getElementById('del-modal').classList.add('hidden');delId=null;saveData();toast('Διαγράφηκε!','success');}
+
+let viewId=null;
+function openView(id){
+  const v=V.find(x=>x.id===id);if(!v)return;
+  viewId=id;
+  document.getElementById('view-modal-title').textContent=v.name;
+  const[iL,iC]=dL(dU(v.ins)),[kL,kC]=dL(dU(v.kteo)),[kkL,kkC]=dL(dU(v.kk)),[sL,sC]=dL(dU(v.svc)),[lL,lC]=dL(dU(v.leasing));
+  const docRow=(label,type)=>{
+    const d=v.docs&&v.docs[type];
+    return`<div class="srow" style="padding:8px 0"><div class="srow-info"><p>${label}</p></div>${d?`<a href="${d.data}" download="${d.name}" class="btn btn-green">📎 ${d.name}</a>`:'<span style="color:var(--text3);font-size:12px">Δεν έχει επισυναφθεί</span>'}</div>`;
+  };
+  const isElec=v.engine==='Electric';
+  const kkFieldHtml=isElec?`<div class="fg"><label>Κ. Καυσαερίων</label><div class="dna" style="font-size:14px">Δ/Ε (Ηλεκτρικό)</div></div>`:`<div class="fg"><label>Λήξη Κ. Καυσαερίων</label><div class="${kkC}" style="font-size:14px">${fD(v.kk)} · ${kkL}</div></div>`;
+  document.getElementById('view-modal-body').innerHTML=`
+    <div class="form-grid" style="margin-bottom:6px">
+      <div class="fg"><label>Πινακίδα</label><div style="font-size:14px"><span class="plate">${v.plate}</span></div></div>
+      <div class="fg"><label>Κατηγορία</label><div style="font-size:14px">${v.cat}</div></div>
+      <div class="fg"><label>Κινητήρας</label><div>${engBadge(v.engine)}</div></div>
+      <div class="fg"><label>Ιδιοκτησία</label><div>${ownBadge(v.own)}</div></div>
+      <div class="fg"><label>Λήξη Ασφάλειας</label><div class="${iC}" style="font-size:14px">${fD(v.ins)} · ${iL}</div></div>
+      <div class="fg"><label>Ασφαλιστική Εταιρεία</label><div style="font-size:14px">${v.inscomp||'—'}</div></div>
+      <div class="fg"><label>Λήξη ΚΤΕΟ</label><div class="${kC}" style="font-size:14px">${fD(v.kteo)} · ${kL}</div></div>
+      ${kkFieldHtml}
+      <div class="fg"><label>Επόμενο Service</label><div class="${sC}" style="font-size:14px">${fD(v.svc)} · ${sL}</div></div>
+      <div class="fg"><label>Λήξη Leasing</label><div class="${lC}" style="font-size:14px">${fD(v.leasing)} · ${lL}</div></div>
+      <div class="fg full"><label>Κάτοχος Leasing</label><div style="font-size:14px">${v.leaseholder||'—'}</div></div>
+      <div class="fg full"><label>Ιστορικό / Σημειώσεις Service</label><div style="font-size:13px;color:var(--text2);white-space:pre-wrap">${v.svcnotes||'—'}</div></div>
+    </div>
+    <div style="margin-top:8px;padding-top:12px;border-top:1px solid var(--border)">
+      <label style="display:block;margin-bottom:6px">Συνημμένα Έγγραφα</label>
+      ${docRow('Ασφαλιστήριο','ins')}
+      ${docRow('ΚΤΕΟ','kteo')}
+      ${isElec?'':docRow('Κάρτα Καυσαερίων','kk')}
+    </div>`;
+  document.getElementById('view-modal').classList.remove('hidden');
+}
+function closeViewModal(){document.getElementById('view-modal').classList.add('hidden');viewId=null;}
+function editFromView(){const id=viewId;closeViewModal();openEdit(id);}
+function renderEmailRows(){
+  const list=document.getElementById('email-list');
+  const emails=S.emails&&S.emails.length?S.emails:[''];
+  list.innerHTML=emails.map((em,i)=>`
+    <div class="email-row" style="display:flex;gap:6px;align-items:center">
+      <input type="email" class="email-input" value="${em.replace(/"/g,'&quot;')}" placeholder="όνομα@tpl.gr" style="width:230px">
+      <div class="action-btn" onclick="removeEmailRow(this)" style="color:var(--red)" title="Αφαίρεση">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>`).join('');
+}
+function addEmailRow(){
+  const list=document.getElementById('email-list');
+  const row=document.createElement('div');
+  row.className='email-row';
+  row.style.display='flex';row.style.gap='6px';row.style.alignItems='center';
+  row.innerHTML=`<input type="email" class="email-input" value="" placeholder="όνομα@tpl.gr" style="width:230px">
+    <div class="action-btn" onclick="removeEmailRow(this)" style="color:var(--red)" title="Αφαίρεση">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13" height="13"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </div>`;
+  list.appendChild(row);
+  row.querySelector('input').focus();
+}
+function removeEmailRow(btn){
+  const list=document.getElementById('email-list');
+  if(list.children.length<=1){btn.closest('.email-row').querySelector('input').value='';return;}
+  btn.closest('.email-row').remove();
+}
+function saveSettings(){
+  const vals=[...document.querySelectorAll('.email-input')].map(i=>i.value.trim()).filter(Boolean);
+  S.emails=vals.length?vals:['theristopoulos@tpl.gr'];
+  S.days=parseInt(document.getElementById('s-days').value)||10;
+  localStorage.setItem('flS',JSON.stringify(S));
+  renderEmailRows();
+  toast('Ρυθμίσεις αποθηκεύτηκαν!','success');
+}
+function clearAll(){if(!confirm('Διαγραφή ΟΛΩΝ των δεδομένων;'))return;localStorage.clear();load();renderAll();toast('Δεδομένα διαγράφηκαν','success');}
+
+function toast(msg,type='success'){
+  const t=document.getElementById('toast'),i=document.getElementById('t-icon');
+  t.className='toast '+type;document.getElementById('t-msg').textContent=msg;
+  i.innerHTML=type==='success'?'<polyline points="20 6 9 17 4 12"/>':'<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>';
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function isTripVehicle(v){
+  const n=(v.name||'').toLowerCase();
+  return n.includes('vito')||n.includes('corsa s d');
+}
+function tripVehicles(){
+  return V.filter(isTripVehicle);
+}
+function tripVehOptions(selectedId){
+  return tripVehicles().map(v=>`<option value="${v.id}" ${v.id===selectedId?'selected':''}>${v.name} (${v.plate})</option>`).join('');
+}
+
+function fillTripVehicleSelects(){
+  const sel=document.getElementById('trip-veh-select');
+  const list=tripVehicles();
+  const prev=sel.value?parseInt(sel.value):null;
+  const keep=prev&&list.some(v=>v.id===prev)?prev:(list[0]?list[0].id:null);
+  sel.innerHTML=list.length===0?'<option value="">Δεν υπάρχουν διαθέσιμα οχήματα</option>':tripVehOptions(keep);
+  document.getElementById('t-vehicle').innerHTML=list.length===0?'<option value="">—</option>':tripVehOptions(keep);
+}
+
+function renderTripsPage(){
+  fillTripVehicleSelects();
+  renderTrips();
+}
+
+function currentTripVehId(){
+  const sel=document.getElementById('trip-veh-select');
+  return sel&&sel.value?parseInt(sel.value):null;
+}
+
+function renderTrips(){
+  const vid=currentTripVehId();
+  const rows=T.filter(t=>t.vehicleId===vid).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  document.getElementById('trip-tbody').innerHTML=rows.length===0?'<tr><td colspan="13" style="text-align:center;color:var(--text3);padding:22px">Δεν υπάρχουν δρομολόγια για αυτό το όχημα.</td></tr>':rows.map(t=>{
+    const km=(t.kmEnd!=null&&t.kmStart!=null)?Math.max(0,t.kmEnd-t.kmStart):null;
+    return`<tr><td>${fD(t.date)}</td><td>${t.dep||'—'}</td><td>${t.arr||'—'}</td><td>${t.kmStart??'—'}</td><td>${t.kmEnd??'—'}</td><td style="font-weight:500">${km??'—'}</td><td>${t.tolls!=null?t.tolls.toFixed(2):'—'}</td><td>${t.charge!=null?t.charge.toFixed(2):'—'}</td><td>${t.box1||0}</td><td>${t.box2||0}</td><td>${t.box3||0}</td><td style="color:var(--text2);font-size:13px">${t.notes||'—'}</td><td><div style="display:flex;gap:4px"><div class="action-btn" onclick="openEditTrip(${t.id})" style="color:var(--accent)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><div class="action-btn" onclick="openDelTrip(${t.id})" style="color:var(--red)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></div></div></td></tr>`;
+  }).join('');
+  const totKm=rows.reduce((s,t)=>s+((t.kmEnd!=null&&t.kmStart!=null)?Math.max(0,t.kmEnd-t.kmStart):0),0);
+  const totTolls=rows.reduce((s,t)=>s+(t.tolls||0),0);
+  const totCharge=rows.reduce((s,t)=>s+(t.charge||0),0);
+  const totB1=rows.reduce((s,t)=>s+(t.box1||0),0),totB2=rows.reduce((s,t)=>s+(t.box2||0),0),totB3=rows.reduce((s,t)=>s+(t.box3||0),0);
+  document.getElementById('trip-kpi-grid').innerHTML=`
+    <div class="kpi accent"><div class="kpi-label">Δρομολόγια</div><div class="kpi-val">${rows.length}</div><div class="kpi-sub">καταχωρήσεις</div></div>
+    <div class="kpi teal"><div class="kpi-label">Χλμ</div><div class="kpi-val">${totKm}</div><div class="kpi-sub">σύνολο διαδρομών</div></div>
+    <div class="kpi amber"><div class="kpi-label">Διόδια + Φόρτιση</div><div class="kpi-val">€${(totTolls+totCharge).toFixed(0)}</div><div class="kpi-sub">€${totTolls.toFixed(2)} διόδια · €${totCharge.toFixed(2)} φόρτιση</div></div>
+    <div class="kpi green"><div class="kpi-label">Κιβώτια</div><div class="kpi-val">${totB1+totB2+totB3}</div><div class="kpi-sub">${totB1} απλά · ${totB2} ογκώδη · ${totB3} πολύ μεγάλα</div></div>`;
+  document.getElementById('trip-sum').textContent=rows.length+' εγγραφές';
+}
+
+function openAddTrip(){
+  editTripId=null;
+  document.getElementById('trip-modal-title').textContent='Νέο Δρομολόγιο';
+  fillTripVehicleSelects();
+  const vid=currentTripVehId();
+  document.getElementById('t-vehicle').value=vid;
+  ['t-date','t-dep','t-arr','t-kmstart','t-kmend','t-tolls','t-charge','t-box1','t-box2','t-box3','t-notes'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('trip-modal').classList.remove('hidden');
+}
+function openEditTrip(id){
+  const t=T.find(x=>x.id===id);if(!t)return;
+  editTripId=id;
+  document.getElementById('trip-modal-title').textContent='Επεξεργασία Δρομολογίου';
+  fillTripVehicleSelects();
+  document.getElementById('t-vehicle').value=t.vehicleId;
+  document.getElementById('t-date').value=t.date||'';
+  document.getElementById('t-dep').value=t.dep||'';
+  document.getElementById('t-arr').value=t.arr||'';
+  document.getElementById('t-kmstart').value=t.kmStart??'';
+  document.getElementById('t-kmend').value=t.kmEnd??'';
+  document.getElementById('t-tolls').value=t.tolls??'';
+  document.getElementById('t-charge').value=t.charge??'';
+  document.getElementById('t-box1').value=t.box1??'';
+  document.getElementById('t-box2').value=t.box2??'';
+  document.getElementById('t-box3').value=t.box3??'';
+  document.getElementById('t-notes').value=t.notes||'';
+  document.getElementById('trip-modal').classList.remove('hidden');
+}
+function closeTripModal(){document.getElementById('trip-modal').classList.add('hidden');editTripId=null;}
+function saveTrip(){
+  const vehicleId=parseInt(document.getElementById('t-vehicle').value);
+  if(!vehicleId){toast('Επιλέξτε όχημα','error');return;}
+  const kmStart=document.getElementById('t-kmstart').value===''?null:parseFloat(document.getElementById('t-kmstart').value);
+  const kmEnd=document.getElementById('t-kmend').value===''?null:parseFloat(document.getElementById('t-kmend').value);
+  if(kmStart!=null&&kmEnd!=null&&kmEnd<kmStart){toast('Τα χλμ λήξης δεν μπορούν να είναι μικρότερα των χλμ έναρξης','error');return;}
+  const data={
+    vehicleId,
+    date:document.getElementById('t-date').value||null,
+    dep:document.getElementById('t-dep').value||null,
+    arr:document.getElementById('t-arr').value||null,
+    kmStart,kmEnd,
+    tolls:document.getElementById('t-tolls').value===''?null:parseFloat(document.getElementById('t-tolls').value),
+    charge:document.getElementById('t-charge').value===''?null:parseFloat(document.getElementById('t-charge').value),
+    box1:document.getElementById('t-box1').value===''?0:parseInt(document.getElementById('t-box1').value),
+    box2:document.getElementById('t-box2').value===''?0:parseInt(document.getElementById('t-box2').value),
+    box3:document.getElementById('t-box3').value===''?0:parseInt(document.getElementById('t-box3').value),
+    notes:document.getElementById('t-notes').value.trim()||null
+  };
+  if(editTripId){const i=T.findIndex(t=>t.id===editTripId);if(i>=0)T[i]={...T[i],...data};toast('Το δρομολόγιο αποθηκεύτηκε!','success');}
+  else{T.push({id:T.reduce((m,t)=>Math.max(m,t.id),0)+1,...data});toast('Το δρομολόγιο προστέθηκε!','success');}
+  closeTripModal();
+  document.getElementById('trip-veh-select').value=vehicleId;
+  saveData();
+  renderTripsPage();
+}
+function openDelTrip(id){delTripId=id;document.getElementById('del-trip-modal').classList.remove('hidden');}
+function confirmDeleteTrip(){T=T.filter(t=>t.id!==delTripId);document.getElementById('del-trip-modal').classList.add('hidden');delTripId=null;saveData();toast('Το δρομολόγιο διαγράφηκε!','success');renderTripsPage();}
+
+function renderBuildings(){
+  document.getElementById('bld-tbody').innerHTML=BLD.length===0?'<tr><td colspan="3" style="text-align:center;color:var(--text3);padding:22px">Δεν υπάρχουν κτίρια ακόμη.</td></tr>':BLD.map(b=>`<tr><td style="font-weight:500">${b.name}</td><td style="color:var(--text2)">${b.notes||'—'}</td><td><div style="display:flex;gap:4px"><div class="action-btn" onclick="openEditBuilding(${b.id})" style="color:var(--accent)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div><div class="action-btn" onclick="openDelBuilding(${b.id})" style="color:var(--red)"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg></div></div></td></tr>`).join('');
+}
+function openAddBuilding(){editBldId=null;document.getElementById('bld-modal-title').textContent='Νέο Κτίριο';document.getElementById('bld-name').value='';document.getElementById('bld-notes').value='';document.getElementById('bld-modal').classList.remove('hidden');}
+function openEditBuilding(id){const b=BLD.find(x=>x.id===id);if(!b)return;editBldId=id;document.getElementById('bld-modal-title').textContent='Επεξεργασία Κτιρίου';document.getElementById('bld-name').value=b.name||'';document.getElementById('bld-notes').value=b.notes||'';document.getElementById('bld-modal').classList.remove('hidden');}
+function closeBuildingModal(){document.getElementById('bld-modal').classList.add('hidden');editBldId=null;}
+function saveBuilding(){
+  const name=document.getElementById('bld-name').value.trim();
+  if(!name){toast('Συμπληρώστε όνομα κτιρίου','error');return;}
+  const data={name,notes:document.getElementById('bld-notes').value.trim()||null};
+  if(editBldId){const i=BLD.findIndex(b=>b.id===editBldId);if(i>=0)BLD[i]={...BLD[i],...data};toast('Το κτίριο αποθηκεύτηκε!','success');}
+  else{BLD.push({id:BLD.reduce((m,b)=>Math.max(m,b.id),0)+1,...data});toast('Το κτίριο προστέθηκε!','success');}
+  closeBuildingModal();saveData();renderBuildings();
+}
+function openDelBuilding(id){const b=BLD.find(x=>x.id===id);if(!b)return;delBldId=id;document.getElementById('del-bld-name').textContent=b.name;document.getElementById('del-bld-modal').classList.remove('hidden');}
+function confirmDeleteBuilding(){BLD=BLD.filter(b=>b.id!==delBldId);document.getElementById('del-bld-modal').classList.add('hidden');delBldId=null;saveData();toast('Το κτίριο διαγράφηκε!','success');renderBuildings();}
+
+function renderAll(){renderDash();renderVehicles(filter);renderAlerts();renderBackups();renderEmailRows();document.getElementById('s-days').value=S.days;}
+
+function ghGetConfig(){
+  return{
+    owner:document.getElementById('gh-owner').value.trim(),
+    repo:document.getElementById('gh-repo').value.trim(),
+    branch:document.getElementById('gh-branch').value.trim()||'main',
+    path:document.getElementById('gh-path').value.trim()||'data/fleet-data.json',
+    token:document.getElementById('gh-token').value.trim()
+  };
+}
+function ghSaveConfig(){
+  const cfg=ghGetConfig();
+  const remember=document.getElementById('gh-remember').checked;
+  localStorage.setItem('flGh',JSON.stringify({owner:cfg.owner,repo:cfg.repo,branch:cfg.branch,path:cfg.path,token:remember?cfg.token:''}));
+  toast('Στοιχεία GitHub αποθηκεύτηκαν!','success');
+}
+function ghStatus(msg,isErr){
+  const el=document.getElementById('gh-status');
+  el.textContent=msg;
+  el.style.color=isErr?'var(--red)':'var(--text3)';
+}
+async function ghPull(){
+  const cfg=ghGetConfig();
+  if(!cfg.owner||!cfg.repo||!cfg.token){toast('Συμπλήρωσε Owner, Repo και Token','error');return;}
+  ghStatus('Λήψη από GitHub...');
+  try{
+    const url=`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path.split('/').map(encodeURIComponent).join('/')}?ref=${encodeURIComponent(cfg.branch)}`;
+    const res=await fetch(url,{headers:{Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json'}});
+    if(res.status===404){ghStatus('Δεν βρέθηκε ακόμα αρχείο δεδομένων στο repo — πάτα «Αποστολή» πρώτα από μια συσκευή.',true);return;}
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||('HTTP '+res.status));}
+    const j=await res.json();
+    ghSha=j.sha;
+    const content=decodeURIComponent(escape(atob(j.content.replace(/\n/g,''))));
+    const data=JSON.parse(content);
+    if(data.vehicles)V=data.vehicles;
+    if(data.trips)T=data.trips;
+    if(data.buildings)BLD=data.buildings;
+    if(data.settings)S=data.settings;
+    localStorage.setItem('flV',JSON.stringify(V));
+    localStorage.setItem('flT',JSON.stringify(T));
+    localStorage.setItem('flBld',JSON.stringify(BLD));
+    localStorage.setItem('flS',JSON.stringify(S));
+    renderAll();
+    ghStatus('Επιτυχής λήψη — ενημερώθηκε '+(data.updated?new Date(data.updated).toLocaleString('el-GR'):'τώρα')+'.');
+    toast('Έγινε λήψη από GitHub!','success');
+  }catch(e){ghStatus('Σφάλμα λήψης: '+e.message,true);toast('Σφάλμα λήψης από GitHub','error');}
+}
+async function ghPush(){
+  const cfg=ghGetConfig();
+  if(!cfg.owner||!cfg.repo||!cfg.token){toast('Συμπλήρωσε Owner, Repo και Token','error');return;}
+  ghStatus('Αποστολή στο GitHub...');
+  try{
+    const url=`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path.split('/').map(encodeURIComponent).join('/')}`;
+    let sha=ghSha;
+    try{
+      const cur=await fetch(url+'?ref='+encodeURIComponent(cfg.branch),{headers:{Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json'}});
+      if(cur.ok){const cj=await cur.json();sha=cj.sha;}
+    }catch(e){}
+    const payload={vehicles:V,trips:T,buildings:BLD,settings:S,updated:new Date().toISOString()};
+    const content=btoa(unescape(encodeURIComponent(JSON.stringify(payload,null,2))));
+    const body={message:'Ενημέρωση δεδομένων στόλου — '+new Date().toLocaleString('el-GR'),content,branch:cfg.branch};
+    if(sha)body.sha=sha;
+    const res=await fetch(url,{method:'PUT',headers:{Authorization:'Bearer '+cfg.token,Accept:'application/vnd.github+json','Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||('HTTP '+res.status));}
+    const rj=await res.json();
+    ghSha=rj.content.sha;
+    ghStatus('Επιτυχής αποστολή — '+new Date().toLocaleString('el-GR')+'.');
+    toast('Στάλθηκε στο GitHub!','success');
+  }catch(e){ghStatus('Σφάλμα αποστολής: '+e.message,true);toast('Σφάλμα αποστολής στο GitHub','error');}
+}
+
+function pinHash(str){
+  let h1=0xdeadbeef,h2=0x41c6ce57;
+  for(let i=0,ch;i<str.length;i++){ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}
+  h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);
+  h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);
+  return(4294967296*(2097151&h2)+(h1>>>0)).toString(16);
+}
+function renderLockScreen(){
+  const stored=localStorage.getItem('flPin');
+  const unlocked=sessionStorage.getItem('flUnlocked')==='1';
+  const scr=document.getElementById('lock-screen');
+  if(stored&&unlocked){scr.classList.add('hidden');return;}
+  scr.classList.remove('hidden');
+  const body=document.getElementById('lock-body');
+  if(!stored){
+    body.innerHTML=`
+      <p class="sub">Πρώτη χρήση — όρισε έναν κωδικό πρόσβασης για να προστατέψεις την εφαρμογή σε αυτή τη συσκευή.</p>
+      <input id="lk-p1" type="password" placeholder="Νέος κωδικός" autofocus>
+      <input id="lk-p2" type="password" placeholder="Επιβεβαίωση κωδικού">
+      <div class="lock-err" id="lk-err"></div>
+      <button class="btn btn-primary" onclick="lockSetup()">Ορισμός Κωδικού</button>`;
+    document.getElementById('lk-p2').addEventListener('keydown',e=>{if(e.key==='Enter')lockSetup();});
+  }else{
+    body.innerHTML=`
+      <p class="sub">Η εφαρμογή είναι κλειδωμένη. Δώσε τον κωδικό πρόσβασης.</p>
+      <input id="lk-p" type="password" placeholder="Κωδικός" autofocus>
+      <div class="lock-err" id="lk-err"></div>
+      <button class="btn btn-primary" onclick="lockUnlock()">Είσοδος</button>
+      <div class="lock-reset" onclick="lockForgot()">Ξέχασα τον κωδικό</div>`;
+    document.getElementById('lk-p').addEventListener('keydown',e=>{if(e.key==='Enter')lockUnlock();});
+  }
+}
+function lockSetup(){
+  const p1=document.getElementById('lk-p1').value,p2=document.getElementById('lk-p2').value;
+  if(p1.length<4){document.getElementById('lk-err').textContent='Ο κωδικός πρέπει να έχει τουλάχιστον 4 χαρακτήρες.';return;}
+  if(p1!==p2){document.getElementById('lk-err').textContent='Οι κωδικοί δεν ταιριάζουν.';return;}
+  localStorage.setItem('flPin',pinHash(p1));
+  sessionStorage.setItem('flUnlocked','1');
+  renderLockScreen();
+}
+function lockUnlock(){
+  const p=document.getElementById('lk-p').value;
+  if(pinHash(p)===localStorage.getItem('flPin')){
+    sessionStorage.setItem('flUnlocked','1');
+    renderLockScreen();
+  }else{
+    document.getElementById('lk-err').textContent='Λάθος κωδικός.';
+    document.getElementById('lk-p').value='';
+    document.getElementById('lk-p').focus();
+  }
+}
+function lockForgot(){
+  if(!confirm('Αυτό θα αφαιρέσει την προστασία κωδικού σε ΑΥΤΗ τη συσκευή (τα δεδομένα ΔΕΝ διαγράφονται). Θα οριστεί νέος κωδικός στη συνέχεια. Συνέχεια;'))return;
+  localStorage.removeItem('flPin');
+  sessionStorage.removeItem('flUnlocked');
+  renderLockScreen();
+}
+function lockNow(){
+  sessionStorage.removeItem('flUnlocked');
+  renderLockScreen();
+}
+function changePin(){
+  const p1=document.getElementById('pin-new').value,p2=document.getElementById('pin-confirm').value;
+  if(p1.length<4){toast('Ο κωδικός πρέπει να έχει τουλάχιστον 4 χαρακτήρες','error');return;}
+  if(p1!==p2){toast('Οι κωδικοί δεν ταιριάζουν','error');return;}
+  localStorage.setItem('flPin',pinHash(p1));
+  document.getElementById('pin-new').value='';
+  document.getElementById('pin-confirm').value='';
+  toast('Ο κωδικός άλλαξε!','success');
+}
+function removePin(){
+  if(!confirm('Αφαίρεση κωδικού πρόσβασης από αυτή τη συσκευή; Η εφαρμογή δεν θα ζητά κωδικό στο εξής.'))return;
+  localStorage.removeItem('flPin');
+  sessionStorage.removeItem('flUnlocked');
+  toast('Ο κωδικός αφαιρέθηκε','success');
+}
+renderLockScreen();
+load();renderAll();
+</script>
+</body>
+</html>
