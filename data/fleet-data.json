@@ -1,0 +1,169 @@
+{
+  "vehicles": [
+    {
+      "id": 1,
+      "name": "Mercedes eVITO",
+      "plate": "AZO3324",
+      "cat": "Φορτηγό ΙΧ",
+      "engine": "Electric",
+      "own": "Owned",
+      "ins": "2026-12-31",
+      "kteo": "2029-12-29",
+      "kk": null,
+      "leasing": null,
+      "svc": "2026-12-01"
+    },
+    {
+      "id": 8,
+      "name": "Tesla",
+      "plate": "ΧΗΡ2290",
+      "cat": "ΙΧ",
+      "engine": "Electric",
+      "own": "Owned",
+      "ins": "2027-02-19",
+      "kteo": "2028-02-19",
+      "kk": null,
+      "leasing": null,
+      "svc": null
+    },
+    {
+      "id": 5,
+      "name": "Opel Corsa S D",
+      "plate": "ΑΖΒ2377",
+      "cat": "ΙΧ",
+      "engine": "Diesel",
+      "own": "Owned",
+      "ins": "2027-05-25",
+      "kteo": "2028-05-25",
+      "kk": "2027-05-25",
+      "leasing": null,
+      "svc": "2026-08-29"
+    },
+    {
+      "id": 6,
+      "name": "Honda SUPRA X",
+      "plate": "ΑΥΥ784",
+      "cat": "Μηχανή",
+      "engine": "Petrol",
+      "own": "Owned",
+      "ins": "2027-01-12",
+      "kteo": null,
+      "kk": null,
+      "leasing": null,
+      "svc": null
+    },
+    {
+      "id": 7,
+      "name": "Suzuki Grand Vitara",
+      "plate": "ΖΚΖ5093",
+      "cat": "ΙΧ",
+      "engine": "Petrol",
+      "own": "Owned",
+      "ins": "2026-08-21",
+      "kteo": "2027-09-06",
+      "kk": "2026-09-06",
+      "leasing": null,
+      "svc": "2027-03-31"
+    },
+    {
+      "id": 2,
+      "name": "Volvo X30",
+      "plate": "BMI1322",
+      "cat": "ΙΧ",
+      "engine": "Electric",
+      "own": "Leased",
+      "ins": "2027-02-05",
+      "kteo": "2030-01-29",
+      "kk": null,
+      "leasing": "2030-02-04",
+      "svc": null
+    },
+    {
+      "id": 3,
+      "name": "Opel Corsa Edition",
+      "plate": "BMI6432",
+      "cat": "ΙΧ",
+      "engine": "Petrol",
+      "own": "Leased",
+      "ins": "2026-12-31",
+      "kteo": "2030-03-02",
+      "kk": null,
+      "leasing": "2030-03-01",
+      "svc": null
+    },
+    {
+      "id": 4,
+      "name": "Peugeot 2008 Hybrid",
+      "plate": "XPK4849",
+      "cat": "ΙΧ",
+      "engine": "Hybrid",
+      "own": "Leased",
+      "ins": "2026-12-31",
+      "kteo": "2030-02-04",
+      "kk": null,
+      "leasing": "2030-02-03",
+      "svc": null
+    }
+  ],
+  "trips": [
+    {
+      "id": 1,
+      "vehicleId": 1,
+      "date": "2026-08-18",
+      "dep": "10:15",
+      "arr": "11:40",
+      "kmStart": 4521077,
+      "kmEnd": 4526077,
+      "tolls": 8,
+      "charge": 12.3,
+      "box1": 5,
+      "box2": 3,
+      "box3": 1,
+      "notes": "Πάτρα → Κόρινθος"
+    },
+    {
+      "id": 2,
+      "vehicleId": 1,
+      "date": "2026-08-18",
+      "dep": "12:25",
+      "arr": null,
+      "kmStart": 1234,
+      "kmEnd": 12345,
+      "tolls": 10,
+      "charge": 10,
+      "box1": 2,
+      "box2": 6,
+      "box3": 5,
+      "notes": null
+    }
+  ],
+  "buildings": [
+    {
+      "id": 1,
+      "name": "Εθνομαρτύρων 41",
+      "notes": ""
+    },
+    {
+      "id": 2,
+      "name": "Εθνομαρτύρων 40",
+      "notes": ""
+    },
+    {
+      "id": 3,
+      "name": "Βιοπα 1",
+      "notes": ""
+    },
+    {
+      "id": 4,
+      "name": "Βιοπα 2",
+      "notes": ""
+    }
+  ],
+  "settings": {
+    "emails": [
+      "theristopoulos@tpl.gr"
+    ],
+    "days": 10
+  },
+  "updated": "2026-08-17T14:48:39.769Z"
+}
