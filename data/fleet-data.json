@@ -110,31 +110,16 @@
       "id": 1,
       "vehicleId": 1,
       "date": "2026-08-18",
-      "dep": "10:15",
-      "arr": "11:40",
-      "kmStart": 4521077,
-      "kmEnd": 4526077,
-      "tolls": 8,
-      "charge": 12.3,
-      "box1": 5,
-      "box2": 3,
-      "box3": 1,
-      "notes": "Πάτρα → Κόρινθος"
-    },
-    {
-      "id": 2,
-      "vehicleId": 1,
-      "date": "2026-08-18",
-      "dep": "12:25",
-      "arr": null,
-      "kmStart": 1234,
-      "kmEnd": 12345,
-      "tolls": 10,
-      "charge": 10,
+      "dep": "09:49",
+      "arr": "17:00",
+      "kmStart": 25061,
+      "kmEnd": 25490,
+      "tolls": 27.6,
+      "charge": 27.85,
       "box1": 2,
-      "box2": 6,
-      "box3": 5,
-      "notes": null
+      "box2": 3,
+      "box3": 0,
+      "notes": "Πάτρα Πειραιάς Μανδρα Πατρα"
     }
   ],
   "buildings": [
@@ -165,5 +150,5 @@
     ],
     "days": 10
   },
-  "updated": "2026-08-17T14:48:39.769Z"
+  "updated": "2026-08-18T15:04:14.221Z"
 }
