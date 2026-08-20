@@ -11,7 +11,15 @@
       "kteo": "2029-12-29",
       "kk": null,
       "leasing": null,
-      "svc": "2026-12-01"
+      "svc": "2026-12-01",
+      "inscomp": null,
+      "leaseholder": null,
+      "svcnotes": "Αρ. Πομποδέκτη: 30626707141",
+      "docs": {
+        "ins": null,
+        "kteo": null,
+        "kk": null
+      }
     },
     {
       "id": 8,
@@ -109,17 +117,17 @@
     {
       "id": 1,
       "vehicleId": 1,
-      "date": "2026-08-20",
-      "dep": "08:15",
-      "arr": "11:40",
-      "kmStart": 45210,
-      "kmEnd": 45260,
-      "tolls": 5.9,
-      "charge": 12.3,
-      "box1": 8,
+      "date": "2026-08-18",
+      "dep": "09:49",
+      "arr": "17:00",
+      "kmStart": 25061,
+      "kmEnd": 25490,
+      "tolls": 27.6,
+      "charge": 27.85,
+      "box1": 2,
       "box2": 3,
-      "box3": 1,
-      "notes": "Πάτρα → Κόρινθος"
+      "box3": 0,
+      "notes": "ΒΙΟΠΑ/Πάτρα-Πειραιάς- Μανδρα- Πατρα"
     }
   ],
   "buildings": [
@@ -150,5 +158,5 @@
     ],
     "days": 10
   },
-  "updated": "2026-08-20T17:38:47.548Z"
+  "updated": "2026-08-20T17:38:57.819Z"
 }
