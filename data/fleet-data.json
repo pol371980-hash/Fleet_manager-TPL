@@ -11,7 +11,15 @@
       "kteo": "2029-12-29",
       "kk": null,
       "leasing": null,
-      "svc": "2026-12-01"
+      "svc": "2026-12-01",
+      "inscomp": null,
+      "leaseholder": null,
+      "svcnotes": "Αρ. Πομποδέκτη: 30626707141",
+      "docs": {
+        "ins": null,
+        "kteo": null,
+        "kk": null
+      }
     },
     {
       "id": 8,
@@ -150,5 +158,5 @@
     ],
     "days": 10
   },
-  "updated": "2026-08-18T15:56:05.544Z"
+  "updated": "2026-08-20T17:19:20.589Z"
 }
