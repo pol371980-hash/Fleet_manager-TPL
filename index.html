@@ -308,7 +308,12 @@ select option{background:var(--bg3)}
         <div class="fg"><label>Αρχείο δεδομένων</label><input id="gh-path" value="data/fleet-data.json"></div>
         <div class="fg full"><label>Personal Access Token</label><input id="gh-token" type="password" placeholder="ghp_..."></div>
       </div>
-      <div class="srow" style="border-bottom:none;padding-top:10px">
+      <div class="srow" style="padding-top:10px">
+        <label style="display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text);cursor:pointer;font-weight:500">
+          <input type="checkbox" id="gh-autosync" style="width:auto" onchange="if(this.checked){document.getElementById('gh-remember').checked=true}"> Αυτόματη αποστολή στο GitHub μετά από κάθε αποθήκευση
+        </label>
+      </div>
+      <div class="srow" style="border-bottom:none;padding-top:4px">
         <label style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text2);cursor:pointer">
           <input type="checkbox" id="gh-remember" style="width:auto"> Να θυμάσαι το token σε αυτή τη συσκευή
         </label>
@@ -518,6 +523,7 @@ function load(){
     if(gh){
       ['owner','repo','branch','path'].forEach(k=>{const el=document.getElementById('gh-'+k);if(el&&gh[k])el.value=gh[k];});
       if(gh.token){const el=document.getElementById('gh-token');if(el)el.value=gh.token;const c=document.getElementById('gh-remember');if(c)c.checked=true;}
+      if(gh.autoSync){const a=document.getElementById('gh-autosync');if(a)a.checked=true;}
     }
   }catch(e){}
 }
@@ -530,6 +536,13 @@ function saveData(){
   document.getElementById('last-saved').textContent=t;
   toast('Αποθηκεύτηκε!','success');
   renderAll();
+  maybeAutoSync();
+}
+function maybeAutoSync(){
+  let gh=null;
+  try{gh=JSON.parse(localStorage.getItem('flGh')||'null');}catch(e){}
+  if(!gh||!gh.autoSync||!gh.owner||!gh.repo||!gh.token)return;
+  ghPush(true);
 }
 function createBackup(){
   const bk={id:Date.now(),date:new Date().toLocaleString('el-GR'),vehicles:JSON.parse(JSON.stringify(V)),trips:JSON.parse(JSON.stringify(T)),buildings:JSON.parse(JSON.stringify(BLD)),count:V.length};
@@ -915,7 +928,8 @@ function ghGetConfig(){
 function ghSaveConfig(){
   const cfg=ghGetConfig();
   const remember=document.getElementById('gh-remember').checked;
-  localStorage.setItem('flGh',JSON.stringify({owner:cfg.owner,repo:cfg.repo,branch:cfg.branch,path:cfg.path,token:remember?cfg.token:''}));
+  const autoSync=document.getElementById('gh-autosync').checked;
+  localStorage.setItem('flGh',JSON.stringify({owner:cfg.owner,repo:cfg.repo,branch:cfg.branch,path:cfg.path,token:remember?cfg.token:'',autoSync}));
   toast('Στοιχεία GitHub αποθηκεύτηκαν!','success');
 }
 function ghStatus(msg,isErr){
@@ -949,9 +963,9 @@ async function ghPull(){
     toast('Έγινε λήψη από GitHub!','success');
   }catch(e){ghStatus('Σφάλμα λήψης: '+e.message,true);toast('Σφάλμα λήψης από GitHub','error');}
 }
-async function ghPush(){
+async function ghPush(silent){
   const cfg=ghGetConfig();
-  if(!cfg.owner||!cfg.repo||!cfg.token){toast('Συμπλήρωσε Owner, Repo και Token','error');return;}
+  if(!cfg.owner||!cfg.repo||!cfg.token){if(!silent)toast('Συμπλήρωσε Owner, Repo και Token','error');return;}
   ghStatus('Αποστολή στο GitHub...');
   try{
     const url=`https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/${cfg.path.split('/').map(encodeURIComponent).join('/')}`;
@@ -968,9 +982,10 @@ async function ghPush(){
     if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e.message||('HTTP '+res.status));}
     const rj=await res.json();
     ghSha=rj.content.sha;
-    ghStatus('Επιτυχής αποστολή — '+new Date().toLocaleString('el-GR')+'.');
-    toast('Στάλθηκε στο GitHub!','success');
-  }catch(e){ghStatus('Σφάλμα αποστολής: '+e.message,true);toast('Σφάλμα αποστολής στο GitHub','error');}
+    ghStatus('Αυτόματος συγχρονισμός — '+new Date().toLocaleString('el-GR')+'.');
+    if(!silent)toast('Στάλθηκε στο GitHub!','success');
+    else toast('Συγχρονίστηκε με GitHub ☁','success');
+  }catch(e){ghStatus('Σφάλμα αποστολής: '+e.message,true);toast('Σφάλμα αυτόματου συγχρονισμού GitHub','error');}
 }
 
 function pinHash(str){
