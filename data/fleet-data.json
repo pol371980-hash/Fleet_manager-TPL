@@ -137,12 +137,42 @@
       "arr": "10:30",
       "kmStart": 25490,
       "kmEnd": 25882,
-      "tolls": null,
+      "tolls": 27.6,
       "charge": 21.55,
       "box1": 0,
       "box2": 4,
       "box3": 0,
       "notes": "ΒΙΟΠΑ DNA /DNA -ΒΙΟΠΑ"
+    },
+    {
+      "id": 3,
+      "vehicleId": 1,
+      "date": "2026-08-26",
+      "dep": "10:00",
+      "arr": null,
+      "kmStart": 25882,
+      "kmEnd": 26271,
+      "tolls": 27.6,
+      "charge": 24.97,
+      "box1": 0,
+      "box2": 0,
+      "box3": 0,
+      "notes": "Πατρα DNA Πάτρα"
+    },
+    {
+      "id": 4,
+      "vehicleId": 1,
+      "date": "2026-08-27",
+      "dep": "12:50",
+      "arr": "17:30",
+      "kmStart": 26271,
+      "kmEnd": 26663,
+      "tolls": 27.6,
+      "charge": 21.15,
+      "box1": 2,
+      "box2": 1,
+      "box3": 3,
+      "notes": "Πατρα DNA Πάτρα"
     }
   ],
   "buildings": [
@@ -173,5 +203,5 @@
     ],
     "days": 10
   },
-  "updated": "2026-08-22T23:07:46.331Z"
+  "updated": "2026-08-27T22:52:09.493Z"
 }
